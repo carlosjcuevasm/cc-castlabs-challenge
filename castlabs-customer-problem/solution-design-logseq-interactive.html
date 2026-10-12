@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Logseq Export</title>
+
+<style>
+  /* Main reading layout. */
+  body {
+    max-width: 1200px;
+    margin: 32px auto;
+    padding: 0 32px;
+    font-family: system-ui, sans-serif;
+    font-size: 22px;
+    line-height: 1.8;
+    color: #252525;
+    overflow-wrap: anywhere;
+  }
+
+  /* Remove all list markers, including square bullets. */
+  ul, ol {
+    list-style: none;
+    padding-left: 0;
+    margin: 8px 0;
+  }
+
+  li {
+    list-style: none;
+    padding: 7px 0;
+    margin: 0;
+  }
+
+  /* Prevent markers beside collapsible toggles. */
+  li:has(> details) {
+    list-style: none;
+  }
+
+  /* Large, readable typography at every nesting level. */
+  li.logseq-item-1 {
+    font-size: 32px;
+    font-weight: 750;
+  }
+
+  li.logseq-item-2 {
+    font-size: 28px;
+    font-weight: 650;
+  }
+
+  li.logseq-item-3 {
+    font-size: 25px;
+    font-weight: 550;
+  }
+
+  li.logseq-item-4 {
+    font-size: 23px;
+    font-weight: 450;
+  }
+
+  li.logseq-item-5 {
+    font-size: 22px;
+    font-weight: 400;
+  }
+
+  li.logseq-item-6 {
+    font-size: 21px;
+    font-weight: 400;
+  }
+
+  li.logseq-item-7,
+  li.logseq-item-8,
+  li.logseq-item-9,
+  li.logseq-item-10,
+  li.logseq-item-11,
+  li.logseq-item-12,
+  li.logseq-item-13,
+  li.logseq-item-14,
+  li.logseq-item-15 {
+    font-size: 20px;
+    font-weight: 400;
+  }
+
+  /* Make toggle headings inherit their nesting level's font. */
+  li[class*="logseq-item-"] > details > summary {
+    font-size: inherit;
+    font-weight: inherit;
+    line-height: 1.7;
+  }
+
+  details > summary {
+    cursor: pointer;
+    line-height: 1.7;
+  }
+
+  summary:hover {
+    color: #666;
+  }
+
+  /* Indent nested content without showing bullet markers. */
+  details > ul,
+  details > ol {
+    margin-top: 10px;
+    margin-bottom: 12px;
+    padding-left: 28px;
+  }
+
+  /* Comfortable paragraph spacing. */
+  p {
+    margin: 12px 0;
+  }
+
+  /* Inline image thumbnails. */
+  img.logseq-thumbnail,
+  img {
+    display: inline-block;
+    max-width: 280px;
+    max-height: 200px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    vertical-align: middle;
+    margin: 8px 6px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    cursor: zoom-in;
+  }
+
+  img:hover {
+    opacity: 0.9;
+  }
+
+  pre {
+    overflow-x: auto;
+    max-width: 100%;
+    font-size: 18px;
+  }
+
+  code {
+    font-size: 0.9em;
+  }
+
+  /* Full-screen image viewer. */
+  .image-lightbox {
+    display: none;
+    position: fixed;
+    z-index: 99999;
+    inset: 0;
+    padding: 24px;
+    box-sizing: border-box;
+    background: rgba(0, 0, 0, 0.90);
+    align-items: center;
+    justify-content: center;
+    cursor: zoom-out;
+  }
+
+  .image-lightbox.visible {
+    display: flex;
+  }
+
+  .image-lightbox img {
+    display: block;
+    max-width: 95vw;
+    max-height: 92vh;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border: none;
+    border-radius: 4px;
+    margin: 0;
+    background: transparent;
+    cursor: zoom-out;
+  }
+
+  .image-lightbox-close {
+    position: absolute;
+    top: 12px;
+    right: 20px;
+    color: white;
+    font-size: 40px;
+    line-height: 1;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+  }
+
+  /* Smaller screens. */
+  @media (max-width: 700px) {
+    body {
+      margin: 16px auto;
+      padding: 0 16px;
+      font-size: 20px;
+    }
+
+    li.logseq-item-1 { font-size: 28px; }
+    li.logseq-item-2 { font-size: 25px; }
+    li.logseq-item-3 { font-size: 23px; }
+    li.logseq-item-4 { font-size: 21px; }
+    li.logseq-item-5 { font-size: 20px; }
+    li.logseq-item-6 { font-size: 19px; }
+
+    li.logseq-item-7,
+    li.logseq-item-8,
+    li.logseq-item-9,
+    li.logseq-item-10,
+    li.logseq-item-11,
+    li.logseq-item-12,
+    li.logseq-item-13,
+    li.logseq-item-14,
+    li.logseq-item-15 {
+      font-size: 18px;
+    }
+
+    details > ul,
+    details > ol {
+      padding-left: 16px;
+    }
+
+    img.logseq-thumbnail,
+    img {
+      max-width: 100%;
+      max-height: 260px;
+    }
+  }
+
+  /* Automatic dark mode. */
+  @media (prefers-color-scheme: dark) {
+    body {
+      background: #1e1e1e;
+      color: #e5e5e5;
+    }
+
+    a {
+      color: #8ab4f8;
+    }
+
+    summary:hover {
+      color: #bbb;
+    }
+
+    img {
+      border-color: #555;
+    }
+  }
+</style>
+</head>
+
+<body>
+<ul>
+  <li class="logseq-item-1"><details class="logseq-level-1"><summary>Customer Issue Solution Design Deliverable for Castlabs<p>  By Carlos Cuevas <a href="mailto:carlosjcuevasm@gmail.com">carlosjcuevasm@gmail.com</a><br></p></summary><ul>
+    <li class="logseq-item-2"><details class="logseq-level-2"><summary>Establishing Context</summary><ul>
+      <li class="logseq-item-3"><details class="logseq-level-3"><summary>The Challenge Sent</summary><ul>
+        <li class="logseq-item-4"><details class="logseq-level-4"><summary>
+          <b>Solution design</b>
+        </summary><ul>
+          <li class="logseq-item-5">We would like you to work on a customer issue and propose a solution during our next meeting.</li>
+          <li class="logseq-item-5">Please take a look at our DRMtoday product here: <a href="https://castlabs.com/security/drmtoday/">https://castlabs.com/security/drmtoday/</a></li>
+          <li class="logseq-item-5">And see how it works at the high level <a href="https://castlabs.com/security/drmtoday/how-it-works/">https://castlabs.com/security/drmtoday/how-it-works/</a></li>
+          <li class="logseq-item-5">DRMtoday supports key ingestion over HTTPS using an authenticated protocol (via CAS - Central Authentication Service) and can either generate or accept keys from the ingest request.</li>
+          <li class="logseq-item-5"><details class="logseq-level-5"><summary>
+            <i>
+              <b>The customer issue is the following:</b>
+            </i>
+          </summary><ul>
+            <li class="logseq-item-6">Our client is a broadcaster company who has recently launched a VoD service on OTT and is facing some end-user errors (DRM license request timeout) when a new famous asset is published. They would like to improve their DRM licensing infrastructure which is an on-premise server where they save all the content keys and deliver the DRM licenses to devices. They have access to their content keys with a simple REST request.</li>
+            <li class="logseq-item-6">A migration to a new server infrastructure is planned but the service continuity is super important.</li>
+          </ul></details></li>
+          
+          <li class="logseq-item-5">During our meeting you will explain a possible solution using DRMtoday and its advantages. You will propose a simple migration plan with a rough timeline.</li>
+        </ul></details></li>
+        
+      </ul></details></li>
+      
+      <li class="logseq-item-3"><details class="logseq-level-3"><summary>Current state</summary><ul>
+        <li class="logseq-item-4"><b>Who:</b> A broadcaster.</li>
+        <li class="logseq-item-4"><b>Business context:</b> Recently launched an OTT video-on-demand (VOD) service</li>
+        <li class="logseq-item-4"><b>Observed Problem:</b> When a popular new asset is published, some end users experience DRM license-request timeouts.</li>
+        <li class="logseq-item-4"><details class="logseq-level-4"><summary>
+          <b>When it happens:</b>
+        </summary><ul>
+          <li class="logseq-item-5">At launch of a popular asset.</li>
+          <li class="logseq-item-5">Thus, likely, during a traffic spike.</li>
+        </ul></details></li>
+        
+        <li class="logseq-item-4"><details class="logseq-level-4"><summary>
+          <b>Why it matters:</b>
+        </summary><ul>
+          <li class="logseq-item-5">A DRM license request is within the critical path playback. Even if the video is available through the CDN and the player can download its segments, playback won't work as expected until the device obtain a valid license in time.</li>
+        </ul></details></li>
+        
+        <li class="logseq-item-4"><details class="logseq-level-4"><summary><b>Business Impact</b>: Potential playback failures and degraded user experience during high-demand launches.</summary><ul>
+          <li class="logseq-item-5"><details class="logseq-level-5"><summary>
+            <b>Affected parties</b>
+          </summary><ul>
+            <li class="logseq-item-6">End users attempting to play popular VOD assets when license requests time out.</li>
+            <li class="logseq-item-6">The broadcaster and stakeholders, through potential customer dissatisfaction, potential support burden, and reduced service reliability.</li>
+          </ul></details></li>
+          
+          <li class="logseq-item-5"><b>Severity / urgency</b>: High due to potential reputational damage. A high-profile launch with problems creates a poor impression on users and reputation degrades</li>
+        </ul></details></li>
+        
+      </ul></details></li>
+      
+      <li class="logseq-item-3"><details class="logseq-level-3"><summary>Desired Outcome</summary><ul>
+        <li class="logseq-item-4"><details class="logseq-level-4"><summary>
+          <b>Must be attained</b>
+          <i>(Intentionally unquantified requirements)</i>
+        </summary><ul>
+          <li class="logseq-item-5">DRM license-request timeouts do not happen on popular launches.</li>
+          <li class="logseq-item-5">High license-request success rate and acceptable response latency.</li>
+          <li class="logseq-item-5">Migration with minimal service disruption.</li>
+        </ul></details></li>
+        
+      </ul></details></li>
+      
+      <li class="logseq-item-3"><details class="logseq-level-3"><summary>Solution Reasoning Framework</summary><ul>
+        <li class="logseq-item-4"><details class="logseq-level-4"><summary>Facts, Assumptions and Contingency</summary><ul>
+          <li class="logseq-item-5">There is not additional information about the customer operation modules and associated architecture. I feel most comfortable by distinguishing the types of information I'll be handling and building on.</li>
+          <li class="logseq-item-5"><details class="logseq-level-5"><summary>Thus... I'm to establish</summary><ul>
+            <li class="logseq-item-6"><b>Facts:</b> Things explicitly stated about the customer operations and the observed problem.</li>
+            <li class="logseq-item-6"><b>Unknowns:</b> Information that I cannot determine from the available evidence.</li>
+            <li class="logseq-item-6"><b>Reasonable Assumptions:</b> Inferences from usual industry practices and the known facts. They're kind of expected.</li>
+            <li class="logseq-item-6"><b>Working Assumptions:</b> Just decisions made to proceed with the solution design, despite missing information.</li>
+            <li class="logseq-item-6"><b>Contingency:</b> Preliminary plan or course of action to take when something is not possible as presumed</li>
+          </ul></details></li>
+          
+        </ul></details></li>
+        
+        <li class="logseq-item-4"><details class="logseq-level-4"><summary>DRM System Model</summary><ul>
+          <li class="logseq-item-5"><details class="logseq-level-5"><summary>
+            <b>Reasonable Assumption</b>
+          </summary><ul>
+            <li class="logseq-item-6"><details class="logseq-level-6"><summary>I'll be working around the understanding of the usual DRM system architecture, scoped for this solution design. Because I cannot know more about the customer, this also serve as the basis of it's reasoning, and would be valid.</summary><ul>
+              <li class="logseq-item-7"><b>The Packager:</b> Prepares the content for delivery. It requests (or informs) of a Content Key (secret symmetrical encryption key) to the DRM system (Key Management).</li>
+              <li class="logseq-item-7"><b>Key management:</b> Generates, stores, manages, or supplies content encryption keys and their associated identifiers.</li>
+              <li class="logseq-item-7"><b>Entitlement and authorization:</b> The broadcaster determines whether the user is permitted to access the content or not, and communicates authorization to the license server.</li>
+              <li class="logseq-item-7"><b>License server:</b> Validates a license request and returns a license constrained by the DRM policy in place.</li>
+              <li class="logseq-item-7"><b>Player / User:</b> The player / device requests a license; It decrypts as expected once it receives it. Playback happens as expected if the others are working fine.</li>
+            </ul></details></li>
+            
+            <li class="logseq-item-6">License serving is a cross-cutting concern, these components follow paths of communication among them to reach a smooth playback of decrypted content.</li>
+          </ul></details></li>
+          
+        </ul></details></li>
+        
+      </ul></details></li>
+      
+    </ul></details></li>
+    
+    <li class="logseq-item-2"><details class="logseq-level-2"><summary>Issue Assessment and Scope</summary><ul>
+      <li class="logseq-item-3"><b>Fact:</b> The broadcaster experiences DRM license-request timeouts when a popular VOD asset launches.</li>
+      <li class="logseq-item-3"><details class="logseq-level-3"><summary><b>Unknow:</b> The precise cause of timeouts.</summary><ul>
+        <li class="logseq-item-4">The issue is observed in the DRM licensing workflow. That in itself does not mean, it's also the culprit.</li>
+        <li class="logseq-item-4"><details class="logseq-level-4"><summary>Other components or dependencies in the licensing workflow could contribute to the failure. In a real scenario, to solve this issue truly, this would need to be at least assessed.</summary><ul>
+          <li class="logseq-item-5">This is so even knowing they handle the licensing workflow with on-premise infrastructure, an easy suspect of scalability issues.</li>
+          <li class="logseq-item-5">Maybe an incorrect key mapping on "launch titles" and configuration issues, maybe Entitlement servers is faulty etc.</li>
+        </ul></details></li>
+        
+      </ul></details></li>
+      
+      <li class="logseq-item-3"><details class="logseq-level-3"><summary><b>Working assumption</b>: They issue is isolated to the licensing infrastructure</summary><ul>
+        <li class="logseq-item-4">This won't be a consultancy on their infrastructure, to close scope, this would be true.</li>
+        <li class="logseq-item-4">The underlying problem may involve peak-load capacity or an implementation issue within the existing licensing infrastructure</li>
+      </ul></details></li>
+      
+    </ul></details></li>
+    
+    <li class="logseq-item-2"><details class="logseq-level-2"><summary>Solution Design</summary><ul>
+      <li class="logseq-item-3"><details class="logseq-level-3"><summary>Customer features</summary><ul>
+        <li class="logseq-item-4"><b>Fact:</b> The customer existing on-premises server stores content keys and delivers DRM licenses.</li>
+        <li class="logseq-item-4"><b>Fact:</b> The customer access key provision with a simple HTTPS REST request</li>
+        <li class="logseq-item-4"><details class="logseq-level-4"><summary><b>Unknown:</b> Whether the customer's existing HTTPS REST API supports key provision in a format compatible with DRMtoday's ingestion workflow.</summary><ul>
+          <li class="logseq-item-5"><b>Working assumption:</b> Existing keys can be securely exported and ingested, either directly or through a small integration component.</li>
+        </ul></details></li>
+        
+        <li class="logseq-item-4"><details class="logseq-level-4"><summary><b>Unknown</b>: If the customer delivery infrastructure allows for a gradual routing license requests to another service scheme.</summary><ul>
+          <li class="logseq-item-5"><b>Working assumption:</b> The customer infrastructure allows for progressive rollout</li>
+        </ul></details></li>
+        
+      </ul></details></li>
+      
+      <li class="logseq-item-3"><details class="logseq-level-3"><summary>DRMToday features</summary><ul>
+        <li class="logseq-item-4"><b>Fact:</b> DRMtoday supports multiple key-ingestion methods, including integrations such as AWS SPEKE, CPIX, and Harmonic KMS.</li>
+        <li class="logseq-item-4"><b>Fact:</b> DRMToday stores content keys and associated metadata to it's secure database for future license delivery</li>
+        <li class="logseq-item-4"><b>Fact:</b> DRMToday supports a managed cloud service and also a self-hosted option</li>
+        <li class="logseq-item-4"><b>Fact:</b> DRMToday infrastructure is very scalable, it grows to meet demand.</li>
+        <li class="logseq-item-4"><b>Fact:</b> DRMToday supports token authorization so the customer checks authorization first and gives DRMToday a secure token it validates during the license request</li>
+        <li class="logseq-item-4"><b>Fact:</b> DRMtoday supports individual license-request details, delivery logs, reporting APIs, and log integration with data pipelines.</li>
+        <li class="logseq-item-4"><b>Fact:</b> DRMtoday offers a globally distributed, multi-region licensing service.</li>
+      </ul></details></li>
+      
+      <li class="logseq-item-3"><details class="logseq-level-3"><summary>Solution</summary><ul>
+        <li class="logseq-item-4">The target can reasonably be a documented DRMtoday integration pattern</li>
+        <li class="logseq-item-4"><details class="logseq-level-4"><summary>
+          <pre data-lang="`">			  Existing key API
+			         ↓
+			  Secure key ingestion
+			         ↓
+			  DRMToday's secure database
+			         ↓
+			  DRMtoday's licensing service
+			         ↓
+			  User's Device
+</pre>
+        </summary><ul>
+          <li class="logseq-item-5">This results in a standard DRMtoday integration</li>
+          <li class="logseq-item-5">
+            <img src="assets/image_1791745854008_0.png" alt="image.png" class="logseq-thumbnail">
+          </li>
+        </ul></details></li>
+        
+        <li class="logseq-item-4"><details class="logseq-level-4"><summary>Explicit Decisions</summary><ul>
+          <li class="logseq-item-5">We are to handle secure key management and licensing as part of our DRM licensing workflow.</li>
+          <li class="logseq-item-5">We're to use the token authorization, it helps to isolate a bit the entitlement check and possible bottlenecks on their on-premise infrastructure</li>
+          <li class="logseq-item-5">We're to push for a managed cloud service, is preferred because it directly addresses the capacity and resilience risk at peak-load patterns seen.</li>
+          <li class="logseq-item-5">Were to provide detailed logs about any licensing issue further down the line as we have great observability</li>
+        </ul></details></li>
+        
+      </ul></details></li>
+      
+    </ul></details></li>
+    
+    <li class="logseq-item-2"><details class="logseq-level-2"><summary>Migration Plan</summary><ul>
+      <li class="logseq-item-3"><details class="logseq-level-3"><summary>1. Discovery and baseline</summary><ul>
+        <li class="logseq-item-4">Confirm and establish the proposed migration is technically feasible, and document current state</li>
+        <li class="logseq-item-4"><details class="logseq-level-4"><summary>
+          <b>Tasks</b>
+        </summary><ul>
+          <li class="logseq-item-5"><details class="logseq-level-5"><summary>Determine whether DRMtoday can ingest the customer's existing keys directly or requires a custom integration to automate key transfer.</summary><ul>
+            <li class="logseq-item-6"><b>Contingency:</b> Leverage DRMtoday's key-generation capabilities, with a custom workaround for migrating existing keys if needed</li>
+          </ul></details></li>
+          
+          <li class="logseq-item-5">Confirm DRMtoday's supported key-ingestion method to use, and also compatibility with existing content and players.</li>
+          <li class="logseq-item-5">Confirm DRM settings capabilities required are met</li>
+          <li class="logseq-item-5">Establish current license-request success rate, timeout rate, latency, and peak traffic.</li>
+          <li class="logseq-item-5"><details class="logseq-level-5"><summary>Confirm the customer's delivery infrastructure allows for directing license requests to the another service selectively or progressively.</summary><ul>
+            <li class="logseq-item-6"><b>Contigency</b>: If progressive traffic routing is unsupported, evaluate migrating license requests for selected assets to DRMtoday, potentially by updating embedded DRM signaling. A coordinated cutover remains the fallback, with a tested rollback procedure.</li>
+          </ul></details></li>
+          
+        </ul></details></li>
+        
+        <li class="logseq-item-4"><details class="logseq-level-4"><summary><b>Output</b>:</summary><ul>
+          <li class="logseq-item-5">Brief documented confirmed migration requirements.</li>
+          <li class="logseq-item-5">Current state information like baseline metrics</li>
+        </ul></details></li>
+        
+        <li class="logseq-item-4"><details class="logseq-level-4"><summary>
+          <b>Time estimate</b>
+        </summary><ul>
+          <li class="logseq-item-5">2-4 days</li>
+        </ul></details></li>
+        
+      </ul></details></li>
+      
+      <li class="logseq-item-3"><details class="logseq-level-3"><summary>2. Integration and configuration</summary><ul>
+        <li class="logseq-item-4">Connect the new system in place and configure it accordingly</li>
+        <li class="logseq-item-4"><details class="logseq-level-4"><summary>
+          <b>Tasks</b>
+        </summary><ul>
+          <li class="logseq-item-5"><details class="logseq-level-5"><summary>Connect the existing key source to DRMtoday</summary><ul>
+            <li class="logseq-item-6">Implement the agreed ingestion method</li>
+            <li class="logseq-item-6">Provision the required content keys and associated metadata securely.</li>
+          </ul></details></li>
+          
+          <li class="logseq-item-5"><details class="logseq-level-5"><summary>Configure the new licensing workflow</summary><ul>
+            <li class="logseq-item-6">Configure token authorization with customer's API</li>
+            <li class="logseq-item-6">Configure license policies</li>
+            <li class="logseq-item-6">Setup required DRM settings</li>
+          </ul></details></li>
+          
+          <li class="logseq-item-5">Devise a tested rollback option as fallback for migration safety</li>
+        </ul></details></li>
+        
+        <li class="logseq-item-4"><details class="logseq-level-4"><summary>
+          <b>Output:</b>
+        </summary><ul>
+          <li class="logseq-item-5">A DRMToday instance is configured, has the required key material and metadata, along with correct licensing workflow.</li>
+        </ul></details></li>
+        
+      </ul></details></li>
+      
+      <li class="logseq-item-3"><details class="logseq-level-3"><summary>3. Functional and load testing</summary><ul>
+        <li class="logseq-item-4">Make sure the new workflow works as expected, on relevant scenarios, in a controlled environment.</li>
+        <li class="logseq-item-4"><details class="logseq-level-4"><summary>
+          <b>Tasks</b>
+          <i>(not exahustive)</i>
+        </summary><ul>
+          <li class="logseq-item-5">Check key-to-asset matching, supported DRM systems, and relevant player/device combinations</li>
+          <li class="logseq-item-5">Verify that authorized users can obtain licenses and play assets</li>
+          <li class="logseq-item-5">Test expired or invalid tokens and unauthorized requests</li>
+          <li class="logseq-item-5">Simulate expected peak load and bursts. Measure latency, timeout rate, and failures.</li>
+        </ul></details></li>
+        
+        <li class="logseq-item-4"><details class="logseq-level-4"><summary>
+          <b>Output:</b>
+        </summary><ul>
+          <li class="logseq-item-5">Evidence that playback, authorization, security, performance and overall functioning meet agreed acceptance criteria</li>
+        </ul></details></li>
+        
+      </ul></details></li>
+      
+      <li class="logseq-item-3"><details class="logseq-level-3"><summary>4.Pilot and limited rollout</summary><ul>
+        <li class="logseq-item-4">Introduce the new licensing path to a small, controlled portion of the service.</li>
+        <li class="logseq-item-4"><details class="logseq-level-4"><summary>
+          <b>Tasks</b>
+        </summary><ul>
+          <li class="logseq-item-5">Start with selected compatible assets or a controlled user cohort scheme.</li>
+          <li class="logseq-item-5">Monitor real license requests and playback outcomes.</li>
+          <li class="logseq-item-5">Compare results with the baseline and check for unexpected failures.</li>
+        </ul></details></li>
+        
+        <li class="logseq-item-4"><details class="logseq-level-4"><summary>
+          <b>Output:</b>
+        </summary><ul>
+          <li class="logseq-item-5">Production evidence that the new path works under real conditions before wider adoption.</li>
+        </ul></details></li>
+        
+      </ul></details></li>
+      
+      <li class="logseq-item-3"><details class="logseq-level-3"><summary>5. Progressive rollout and monitoring</summary><ul>
+        <li class="logseq-item-4">Goal is a gradual adoption of the tested solution. Increase traffic in stages rather than switching everything at once without backup plan.</li>
+        <li class="logseq-item-4"><details class="logseq-level-4"><summary>
+          <b>Tasks</b>
+        </summary><ul>
+          <li class="logseq-item-5">Expand the rollout as each stage meets the agreed criteria.</li>
+          <li class="logseq-item-5">Monitor license success, timeout rate, latency, traffic, and provider errors.</li>
+          <li class="logseq-item-5">Define who can pause or reverse the rollout and what thresholds trigger the decision.</li>
+        </ul></details></li>
+        
+        <li class="logseq-item-4"><details class="logseq-level-4"><summary>
+          <b>Output:</b>
+        </summary><ul>
+          <li class="logseq-item-5">The new system handles the intended production traffic with measurable stability.</li>
+        </ul></details></li>
+        
+      </ul></details></li>
+      
+      <li class="logseq-item-3"><details class="logseq-level-3"><summary>6. Stabilization and decommissioning</summary><ul>
+        <li class="logseq-item-4">Keep the old system available until the new one is proven stable.</li>
+        <li class="logseq-item-4"><details class="logseq-level-4"><summary>
+          <b>Tasks</b>
+        </summary><ul>
+          <li class="logseq-item-5">Maintain the rollback option for an agreed observation period.</li>
+          <li class="logseq-item-5">Confirm operational ownership, alerting, support procedures, and incident escalation arragements.</li>
+          <li class="logseq-item-5">Retire the old licensing service, but only after dependencies are removed and sign-off is complete.</li>
+        </ul></details></li>
+        
+        <li class="logseq-item-4"><details class="logseq-level-4"><summary>
+          <b>Output:</b>
+        </summary><ul>
+          <li class="logseq-item-5">Approved new service and a safely retired old path, if retirement is appropriate.</li>
+        </ul></details></li>
+        
+      </ul></details></li>
+      
+      <li class="logseq-item-3"><details class="logseq-level-3"><summary>Timeline estimates</summary><ul>
+        <li class="logseq-item-4">
+          <blockquote>
+            <p>Estimates are rough planning placeholders. I don't know the customer's existing tooling, how much DRMtoday-specific work is required, or the process of familiarity with DRMToday.<br></p>
+          </blockquote>
+        </li>
+        <li class="logseq-item-4">These are preliminary estimates in working days, assuming one engineer. They are not vendor-validated commitments, nor it takes into account major unexpected issues on any migration plan stage.</li>
+        <li class="logseq-item-4">
+          <table style="width:100%">
+            <tbody><tr>
+              <th>Stage</th>
+              <th>Rough estimate</th>
+            </tr>
+            <tr>
+              <td>Discovery and baseline</td>
+              <td>2–5 days</td>
+            </tr>
+            <tr>
+              <td>Integration and configuration</td>
+              <td>3–10 days</td>
+            </tr>
+            <tr>
+              <td>Functional testing</td>
+              <td>2–5 days</td>
+            </tr>
+            <tr>
+              <td>Pilot and progressive rollout</td>
+              <td>3–5 days</td>
+            </tr>
+            <tr>
+              <td>Stabilization and decommissioning</td>
+              <td>5–10 days</td>
+            </tr>
+            <tr>
+              <td>Total</td>
+              <td>15–35 working days</td>
+            </tr>
+          </tbody></table>
+        </li>
+        <li class="logseq-item-4">
+      </li></ul></details></li>
+      
+    </ul></details></li>
+    
+    <li class="logseq-item-2"><details class="logseq-level-2"><summary>Advantages of DRMtoday</summary><ul>
+      <li class="logseq-item-3">Even without many details about the customer's DRM licensing current capabilities, the following are key DRMtoday capabilities and benefits worth mentioning .</li>
+      <li class="logseq-item-3"><details class="logseq-level-3"><summary>Security, Reliability and Operational Support</summary><ul>
+        <li class="logseq-item-4">Hollywood studio-grade security (Cartesian’s extensive Farncombe Security Audit®) designed to meet content-owner requirements.</li>
+        <li class="logseq-item-4">Security audits and compliance-related assurances, subject to verification of the applicable scope and certifications.</li>
+        <li class="logseq-item-4">DRM expertise and 24/7 expert support, depending on the selected service plan.</li>
+        <li class="logseq-item-4">Detailed license-request logs, reporting, and monitoring capabilities.</li>
+      </ul></details></li>
+      
+      <li class="logseq-item-3"><details class="logseq-level-3"><summary>Comprehensive DRM Capabilities</summary><ul>
+        <li class="logseq-item-4">Multi-DRM support: Widevine, FairPlay, PlayReady, and WisePlay.</li>
+        <li class="logseq-item-4">Fast key rotation to strengthen content protection.</li>
+        <li class="logseq-item-4">Multi-key management for assets requiring different encryption keys.</li>
+        <li class="logseq-item-4">Flexible licensing policies, including concurrent-stream limits, dual-expiry licenses, persistent licensing, and license pre-fetching.</li>
+        <li class="logseq-item-4">Playback restrictions based on user, device, and geolocation, plus output-protection requirements such as HDCP.</li>
+      </ul></details></li>
+      
+      <li class="logseq-item-3"><details class="logseq-level-3"><summary>Performance and Scalability</summary><ul>
+        <li class="logseq-item-4">Managed infrastructure designed to scale with fluctuating license-request demand.</li>
+        <li class="logseq-item-4">Globally distributed licensing infrastructure with redundancy and fault-tolerance capabilities.</li>
+        <li class="logseq-item-4">Edge-based capabilities that can reduce latency.</li>
+      </ul></details></li>
+      
+      <li class="logseq-item-3"><details class="logseq-level-3"><summary>High Availability</summary><ul>
+        <li class="logseq-item-4">Service-level agreement (SLA) options, potentially reaching 99.999% uptime depending on the selected plan and contractual terms.</li>
+      </ul></details></li>
+      
+    </ul></details></li>
+    
+    <li class="logseq-item-2"><details class="logseq-level-2"><summary>Open discussion and questions</summary><ul>
+      <li class="logseq-item-3"><details class="logseq-level-3"><summary>Potential for Future Expansion</summary><ul>
+        <li class="logseq-item-4"><b>IPTV multicast and hybrid services:</b> The customer is a broadcaster that recently launched OTT. DRMtoday also supports DRM use cases for content protection to IPTV multicast or hybrid delivery environments. There might be an opportunity of expansion there, thus servicing both IPTV and OTT.</li>
+        <li class="logseq-item-4"><b>Packager and key-management integration:</b> DRMtoday can integrate with supported packaging workflows to provision or retrieve content keys, potentially simplifying the connection between encryption, packaging, and license delivery.</li>
+      </ul></details></li>
+      
+    </ul></details></li>
+    
+  </ul></details></li>
+  
+</ul>
+
+<script>
+(() => {
+  const lightbox = document.createElement("div");
+  lightbox.className = "image-lightbox";
+  lightbox.setAttribute("role", "dialog");
+  lightbox.setAttribute("aria-modal", "true");
+  lightbox.setAttribute("aria-label", "Enlarged image");
+
+  const enlarged = document.createElement("img");
+  enlarged.alt = "";
+
+  const closeButton = document.createElement("button");
+  closeButton.className = "image-lightbox-close";
+  closeButton.type = "button";
+  closeButton.textContent = "×";
+  closeButton.setAttribute("aria-label", "Close enlarged image");
+
+  lightbox.append(enlarged, closeButton);
+  document.body.appendChild(lightbox);
+
+  function closeLightbox() {
+    lightbox.classList.remove("visible");
+    enlarged.removeAttribute("src");
+  }
+
+  document.querySelectorAll("body img:not(.image-lightbox img)").forEach(img => {
+    img.loading = "lazy";
+    img.style.cursor = "zoom-in";
+
+    img.addEventListener("click", () => {
+      if (!img.complete || img.naturalWidth === 0) {
+        return;
+      }
+
+      enlarged.src = img.currentSrc || img.src;
+      enlarged.alt = img.alt || "Enlarged image";
+      lightbox.classList.add("visible");
+    });
+  });
+
+  lightbox.addEventListener("click", event => {
+    if (event.target === lightbox || event.target === closeButton) {
+      closeLightbox();
+    }
+  });
+
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape") {
+      closeLightbox();
+    }
+  });
+})();
+</script>
+</body>
+</html>

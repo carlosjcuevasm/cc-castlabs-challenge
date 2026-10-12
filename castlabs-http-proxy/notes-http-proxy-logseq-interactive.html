@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Logseq Export</title>
+
+<style>
+  /* Main reading layout. */
+  body {
+    max-width: 1200px;
+    margin: 32px auto;
+    padding: 0 32px;
+    font-family: system-ui, sans-serif;
+    font-size: 22px;
+    line-height: 1.8;
+    color: #252525;
+    overflow-wrap: anywhere;
+  }
+
+  /* Remove all list markers, including square bullets. */
+  ul, ol {
+    list-style: none;
+    padding-left: 0;
+    margin: 8px 0;
+  }
+
+  li {
+    list-style: none;
+    padding: 7px 0;
+    margin: 0;
+  }
+
+  /* Prevent markers beside collapsible toggles. */
+  li:has(> details) {
+    list-style: none;
+  }
+
+  /* Large, readable typography at every nesting level. */
+  li.logseq-item-1 {
+    font-size: 32px;
+    font-weight: 750;
+  }
+
+  li.logseq-item-2 {
+    font-size: 28px;
+    font-weight: 650;
+  }
+
+  li.logseq-item-3 {
+    font-size: 25px;
+    font-weight: 550;
+  }
+
+  li.logseq-item-4 {
+    font-size: 23px;
+    font-weight: 450;
+  }
+
+  li.logseq-item-5 {
+    font-size: 22px;
+    font-weight: 400;
+  }
+
+  li.logseq-item-6 {
+    font-size: 21px;
+    font-weight: 400;
+  }
+
+  li.logseq-item-7,
+  li.logseq-item-8,
+  li.logseq-item-9,
+  li.logseq-item-10,
+  li.logseq-item-11,
+  li.logseq-item-12,
+  li.logseq-item-13,
+  li.logseq-item-14,
+  li.logseq-item-15 {
+    font-size: 20px;
+    font-weight: 400;
+  }
+
+  /* Make toggle headings inherit their nesting level's font. */
+  li[class*="logseq-item-"] > details > summary {
+    font-size: inherit;
+    font-weight: inherit;
+    line-height: 1.7;
+  }
+
+  details > summary {
+    cursor: pointer;
+    line-height: 1.7;
+  }
+
+  summary:hover {
+    color: #666;
+  }
+
+  /* Indent nested content without showing bullet markers. */
+  details > ul,
+  details > ol {
+    margin-top: 10px;
+    margin-bottom: 12px;
+    padding-left: 28px;
+  }
+
+  /* Comfortable paragraph spacing. */
+  p {
+    margin: 12px 0;
+  }
+
+  /* Inline image thumbnails. */
+  img.logseq-thumbnail,
+  img {
+    display: inline-block;
+    max-width: 280px;
+    max-height: 200px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    vertical-align: middle;
+    margin: 8px 6px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    cursor: zoom-in;
+  }
+
+  img:hover {
+    opacity: 0.9;
+  }
+
+  pre {
+    overflow-x: auto;
+    max-width: 100%;
+    font-size: 18px;
+  }
+
+  code {
+    font-size: 0.9em;
+  }
+
+  /* Full-screen image viewer. */
+  .image-lightbox {
+    display: none;
+    position: fixed;
+    z-index: 99999;
+    inset: 0;
+    padding: 24px;
+    box-sizing: border-box;
+    background: rgba(0, 0, 0, 0.90);
+    align-items: center;
+    justify-content: center;
+    cursor: zoom-out;
+  }
+
+  .image-lightbox.visible {
+    display: flex;
+  }
+
+  .image-lightbox img {
+    display: block;
+    max-width: 95vw;
+    max-height: 92vh;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border: none;
+    border-radius: 4px;
+    margin: 0;
+    background: transparent;
+    cursor: zoom-out;
+  }
+
+  .image-lightbox-close {
+    position: absolute;
+    top: 12px;
+    right: 20px;
+    color: white;
+    font-size: 40px;
+    line-height: 1;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+  }
+
+  /* Smaller screens. */
+  @media (max-width: 700px) {
+    body {
+      margin: 16px auto;
+      padding: 0 16px;
+      font-size: 20px;
+    }
+
+    li.logseq-item-1 { font-size: 28px; }
+    li.logseq-item-2 { font-size: 25px; }
+    li.logseq-item-3 { font-size: 23px; }
+    li.logseq-item-4 { font-size: 21px; }
+    li.logseq-item-5 { font-size: 20px; }
+    li.logseq-item-6 { font-size: 19px; }
+
+    li.logseq-item-7,
+    li.logseq-item-8,
+    li.logseq-item-9,
+    li.logseq-item-10,
+    li.logseq-item-11,
+    li.logseq-item-12,
+    li.logseq-item-13,
+    li.logseq-item-14,
+    li.logseq-item-15 {
+      font-size: 18px;
+    }
+
+    details > ul,
+    details > ol {
+      padding-left: 16px;
+    }
+
+    img.logseq-thumbnail,
+    img {
+      max-width: 100%;
+      max-height: 260px;
+    }
+  }
+
+  /* Automatic dark mode. */
+  @media (prefers-color-scheme: dark) {
+    body {
+      background: #1e1e1e;
+      color: #e5e5e5;
+    }
+
+    a {
+      color: #8ab4f8;
+    }
+
+    summary:hover {
+      color: #bbb;
+    }
+
+    img {
+      border-color: #555;
+    }
+  }
+</style>
+</head>
+
+<body>
+<ul>
+  <li class="logseq-item-1"><details class="logseq-level-1"><summary>Notes on development "HTTP Proxy Challenge" for Castlabs<p>  By Carlos Cuevas carlosjcuevasm@gmail.com<br></p></summary><ul>
+    <li class="logseq-item-2"><details class="logseq-level-2"><summary>Stages</summary><ul>
+      <li class="logseq-item-3"><details class="logseq-level-3"><summary>M1 - Contract and implement the core</summary><ul>
+        <li class="logseq-item-4">Define the incoming POST request format, including how the username is provided.</li>
+        <li class="logseq-item-4">Implement JWT generation as an independent function.</li>
+        <li class="logseq-item-4">Include <code>iat</code>, <code>jti</code>, and <code>payload</code>.</li>
+        <li class="logseq-item-4">Sign the token using HS512 and the supplied hexadecimal secret.</li>
+        <li class="logseq-item-4">Implement an asynchronous proxy that attaches <code>x-my-jwt</code> and forwards the POST request.</li>
+        <li class="logseq-item-4">Deliverable: A working HTTP proxy with the required JWT behavior.</li>
+      </ul></details></li>
+      
+      <li class="logseq-item-3"><details class="logseq-level-3"><summary>M2 - Packaging and Execution</summary><ul>
+        <li class="logseq-item-4"><details class="logseq-level-4"><summary>Create the mandatory project infrastructure:</summary><ul>
+          <li class="logseq-item-5"><code>Dockerfile</code> — builds the application image.</li>
+          <li class="logseq-item-5"><code>docker-compose.yml</code> — defines how to run the application using Docker Compose.</li>
+          <li class="logseq-item-5"><code>Makefile</code> — provides <code>build</code> and <code>run</code> targets, with configurable <code>HTTP_PORT</code>.</li>
+          <li class="logseq-item-5"><code>README.md</code> — explains configuration, prerequisites, building, running, and using the application.</li>
+        </ul></details></li>
+        
+        <li class="logseq-item-4">Deliverable: Run the application using the documented commands.</li>
+      </ul></details></li>
+      
+      <li class="logseq-item-3"><details class="logseq-level-3"><summary>M3 - Add the bonus status endpoint</summary><ul>
+        <li class="logseq-item-4"><details class="logseq-level-4"><summary>Implement <code>/status</code> with:</summary><ul>
+          <li class="logseq-item-5">Time elapsed since application startup.</li>
+          <li class="logseq-item-5">Number of requests processed.</li>
+        </ul></details></li>
+        
+        <li class="logseq-item-4">Define the counter's semantics explicitly—for example, counting requests received by the application, including those that fail upstream.</li>
+        <li class="logseq-item-4">Deliverable: The (bonus) requested working status endpoint.</li>
+      </ul></details></li>
+      
+      <li class="logseq-item-3"><details class="logseq-level-3"><summary>M4 - Add automated tests</summary><ul>
+        <li class="logseq-item-4">Test JWT claims and signature verification.</li>
+        <li class="logseq-item-4">Test that the proxy forwards the request with the correct JWT header.</li>
+        <li class="logseq-item-4">Test upstream responses and relevant failure scenarios.</li>
+        <li class="logseq-item-4">Test <code>/status</code> endpoint</li>
+        <li class="logseq-item-4">Add the <code>test</code> Makefile target.</li>
+        <li class="logseq-item-4">Deliverable: The (bonus) repeatable test suite.</li>
+      </ul></details></li>
+      
+    </ul></details></li>
+    
+    <li class="logseq-item-2"><details class="logseq-level-2"><summary>Main (M1)</summary><ul>
+      <li class="logseq-item-3"><details class="logseq-level-3"><summary>Core library</summary><ul>
+        <li class="logseq-item-4">
+          <table style="width:100%">
+            <tbody><tr>
+              <th>Library</th>
+              <th>Responsibility</th>
+            </tr>
+            <tr>
+              <td>FastAPI</td>
+              <td>Define the HTTP endpoint and validate requests</td>
+            </tr>
+            <tr>
+              <td>Uvicorn</td>
+              <td>Run the asynchronous web application</td>
+            </tr>
+            <tr>
+              <td>HTTPX</td>
+              <td>Forward requests asynchronously</td>
+            </tr>
+            <tr>
+              <td>PyJWT</td>
+              <td>Create and sign JWTs</td>
+            </tr>
+          </tbody></table>
+        </li>
+      </ul></details></li>
+      
+      <li class="logseq-item-3"><details class="logseq-level-3"><summary>JWT creation</summary><ul>
+        <li class="logseq-item-4">Secret decoding: <code>bytes.fromhex()</code> interprets the supplied hexadecimal string as bytes.</li>
+        <li class="logseq-item-4"><code>now.date()</code> uses the UTC date because <code>now</code> is timezone-aware and explicitly set to UTC. That avoids dependence on the container's local timezone.</li>
+      </ul></details></li>
+      
+      <li class="logseq-item-3"><details class="logseq-level-3"><summary>Connecting the pieces</summary><ul>
+        <li class="logseq-item-4">
+          <pre data-lang="`">			  POST /proxy
+			      |
+			      v
+			  Validate JSON and extract username
+			      |
+			      v
+			  Generate JWT
+			      |
+			      v
+			  HTTPX async POST + x-my-jwt
+			      |
+			      v
+			  Return upstream response
+</pre>
+        </li>
+      </ul></details></li>
+      
+      <li class="logseq-item-3"><details class="logseq-level-3"><summary>HTTPX Pooled connections</summary><ul>
+        <li class="logseq-item-4">Without connection pooling:</li>
+        <li class="logseq-item-4">
+          <pre>			  Request 1 → Create connection → Upstream → Close connection
+			  Request 2 → Create connection → Upstream → Close connection
+			  Request 3 → Create connection → Upstream → Close connection
+</pre>
+        </li>
+        <li class="logseq-item-4">With a shared HTTPX client:</li>
+        <li class="logseq-item-4">
+          <pre>			  Shared HTTPX client
+			          │
+			          ├── Request 1 ──┐
+			          ├── Request 2 ──┼── Reuse pooled connections → Upstream
+			          └── Request 3 ──┘
+</pre>
+        </li>
+      </ul></details></li>
+      
+      <li class="logseq-item-3"><details class="logseq-level-3"><summary>Endpoint /proxy</summary><ul>
+        <li class="logseq-item-4">Assignment only says to implement an HTTP proxy that accepts POST requests.</li>
+        <li class="logseq-item-4">Decided to expose that functionality at <code>POST /proxy</code></li>
+        <li class="logseq-item-4">An explicit route makes the endpoint easy to discover and documents its purpose clearly</li>
+      </ul></details></li>
+      
+      <li class="logseq-item-3"><details class="logseq-level-3"><summary>Asynchronous calls</summary><ul>
+        <li class="logseq-item-4">While waiting for the upstream response, the server can work on other requests rather than blocking that execution path.</li>
+        <li class="logseq-item-4">Endpoints are to be asynchronous functions, and so is the app lifecycle</li>
+      </ul></details></li>
+      
+      <li class="logseq-item-3"><details class="logseq-level-3"><summary>App lifespan</summary><ul>
+        <li class="logseq-item-4"><details class="logseq-level-4"><summary>
+          <pre data-lang="`">			  1. STARTUP
+			     ├── Read environment variables
+			     ├── Validate configuration
+			     └── Create HTTPX client
+			  
+			           yield
+			             ↓
+			  
+			  2. APPLICATION RUNNING
+			     └── Handle incoming requests
+			  
+			             ↓
+			  
+			  3. SHUTDOWN
+			     └── Close the HTTPX client
+</pre>
+        </summary><ul>
+          <li class="logseq-item-5">
+            <pre data-lang="`">				  Uvicorn starts
+				      ↓
+				  FastAPI startup → lifespan enters
+				      ↓
+				  App handles requests for hours
+				      ↓
+				  Uvicorn shuts down the app
+				      ↓
+				  Lifespan exits → cleanup runs
+</pre>
+          </li>
+        </ul></details></li>
+        
+        <li class="logseq-item-4">create the HTTP client once and reuse it across requests</li>
+        <li class="logseq-item-4">Around FastApi <code>lifespan</code>. Using <code>yield</code>. Being alive in memory and being properly cleaned up are different things. If  the project/process entirely, memory is eventually reclaimed by os. Not good practice to on process termination to clean up resources properly.</li>
+      </ul></details></li>
+      
+      <li class="logseq-item-3"><details class="logseq-level-3"><summary>Simplifaction of headers</summary><ul>
+        <li class="logseq-item-4">A fully transparent HTTP proxy might preserve or handle many more headers, including redirect, caching, authentication, and connection-related headers.</li>
+        <li class="logseq-item-4"><details class="logseq-level-4"><summary>Benefits</summary><ul>
+          <li class="logseq-item-5">More control about which headers the upstream receives</li>
+          <li class="logseq-item-5">Easily demonstrate that <code>x-my-jwt</code> was added.</li>
+          <li class="logseq-item-5">At this stage, upstream is outsourced, so better not send forward client-specific headers or what not, that aren't appropriate upstream</li>
+          <li class="logseq-item-5">Avoid forwarding headers that HTTP clients or proxies should manage themselves, such as <code>Host</code> and <code>Content-Length</code></li>
+        </ul></details></li>
+        
+        <li class="logseq-item-4">The assignment disregards the upstream thus dropping headers must be fine</li>
+        <li class="logseq-item-4">Focused on the essential behavior: a small POST-forwarding service with JWT injection.</li>
+      </ul></details></li>
+      
+      <li class="logseq-item-3"><details class="logseq-level-3"><summary>Using Pydantic</summary><ul>
+        <li class="logseq-item-4">Added Pydantic model</li>
+        <li class="logseq-item-4">Swagger understands that the endpoint accepts a JSON object with a <code>username</code> field and can render an editable request body.</li>
+        <li class="logseq-item-4"><details class="logseq-level-4"><summary>The request contract becomes explicit, <code>/docs</code> becomes more useful, and the code communicates its expectations clearly</summary><ul>
+          <li class="logseq-item-5">Pydantic will automatically reject malformed JSON and validate the request before the endpoint executes</li>
+          <li class="logseq-item-5"><code>extra="allow"</code> means requests can include fields such as <code>message</code> and such in addition to <code>username</code>.</li>
+          <li class="logseq-item-5">The model documents the contract without unnecessarily restricting the input.</li>
+          <li class="logseq-item-5">Note: Pydantic validates type, the explicit check still usefull because rejects empty or whitespace-only usernames.</li>
+        </ul></details></li>
+        
+      </ul></details></li>
+      
+    </ul></details></li>
+    
+    <li class="logseq-item-2"><details class="logseq-level-2"><summary>Packaging and Execution (M2)</summary><ul>
+      <li class="logseq-item-3"><details class="logseq-level-3"><summary>Notes on <code>Dockerfile</code></summary><ul>
+        <li class="logseq-item-4">Copy dependencies first: Docker can reuse the dependency-installation layer when only application code changes.</li>
+        <li class="logseq-item-4"><code>python:3.11-slim</code>: Meets the Python requirement without using the larger full image.</li>
+        <li class="logseq-item-4"><code>PYTHONDONTWRITEBYTECODE</code>: Avoids writing <code>.pyc</code> files into the container.</li>
+        <li class="logseq-item-4"><code>PYTHONUNBUFFERED</code>: Makes application logs appear promptly.</li>
+        <li class="logseq-item-4"><code>CMD</code>: Starts Uvicorn and allows <code>HTTP_PORT</code> to override the default port.</li>
+      </ul></details></li>
+      
+      <li class="logseq-item-3"><details class="logseq-level-3"><summary>Notes on <code>docker-compose.yml</code></summary><ul>
+        <li class="logseq-item-4">Compose Specification: No legacy <code>version</code> field.</li>
+        <li class="logseq-item-4">Configurable port: The host and container ports use the same <code>HTTP_PORT</code> value.</li>
+        <li class="logseq-item-4">Secret validation: Compose refuses to start if <code>JWT_SECRET_HEX</code> is missing.</li>
+        <li class="logseq-item-4">Environment variables: Compose reads <code>.env</code> for interpolation and passes the required values into the container.</li>
+        <li class="logseq-item-4">Build configuration: Compose builds the image from the project's <code>Dockerfile</code>.</li>
+      </ul></details></li>
+      
+      <li class="logseq-item-3"><details class="logseq-level-3"><summary>Notes on <code>Makefile</code></summary><ul>
+        <li class="logseq-item-4">Included <code>.PHONY: build run</code> as is good practice</li>
+        <li class="logseq-item-4">Can run either <code>make run</code> or specify any other port like <code>HTTP_PORT=9000 make run</code></li>
+      </ul></details></li>
+      
+    </ul></details></li>
+    
+    <li class="logseq-item-2"><details class="logseq-level-2"><summary>Status endpoint (M3)</summary><ul>
+      <li class="logseq-item-3"><code>time.monotonic()</code>measures elapsed time without being affected by system clock changes. Counter increments before the request is processed, invalid requests and upstream failures count too.</li>
+      <li class="logseq-item-3">Requests to <code>/proxy</code> increase request's count, <code>/status</code> do not</li>
+      <li class="logseq-item-3">
+    </li></ul></details></li>
+    
+    <li class="logseq-item-2"><details class="logseq-level-2"><summary>Tests (M4)</summary><ul>
+      <li class="logseq-item-3"><details class="logseq-level-3"><summary><code>test_jwt_utils.py</code>: verifies token generation independently of HTTP.</summary><ul>
+        <li class="logseq-item-4">check expected claims</li>
+        <li class="logseq-item-4">checks unique <code>jti</code> on each run</li>
+      </ul></details></li>
+      
+      <li class="logseq-item-3"><details class="logseq-level-3"><summary><code>test_proxy.py</code>: verifies the API and its interaction with the upstream.</summary><ul>
+        <li class="logseq-item-4">Successful forwarding: the original JSON body reaches the upstream, with an <code>x-my-jwt</code> header.</li>
+        <li class="logseq-item-4">Upstream response: status code, body, and content type are preserved.</li>
+        <li class="logseq-item-4">Upstream failure: a connection error produces HTTP <code>502</code>.</li>
+        <li class="logseq-item-4">Validation: missing or blank usernames are rejected.</li>
+        <li class="logseq-item-4">Status: verifies uptime, the initial count, counting failed requests, and that <code>/status</code> itself doesn't increase the counter.</li>
+      </ul></details></li>
+      
+      <li class="logseq-item-3">Note: Using a test-only secret keeps the tests independent of the <code>.env</code> file and avoids exposing the assignment secret in test code.</li>
+      <li class="logseq-item-3"><details class="logseq-level-3"><summary>Note: Locked versions of dependencies</summary><ul>
+        <li class="logseq-item-4"><code>requirements.in</code> as the human-maintained list of direct dependencies and version constraints.</li>
+        <li class="logseq-item-4">Used <code>pip-tools</code> (<code>pip-compile</code>) to generate <code>requirements.txt</code>, locking exact versions of dependencies</li>
+      </ul></details></li>
+      
+    </ul></details></li>
+    
+  </ul></details></li>
+  
+</ul>
+
+<script>
+(() => {
+  const lightbox = document.createElement("div");
+  lightbox.className = "image-lightbox";
+  lightbox.setAttribute("role", "dialog");
+  lightbox.setAttribute("aria-modal", "true");
+  lightbox.setAttribute("aria-label", "Enlarged image");
+
+  const enlarged = document.createElement("img");
+  enlarged.alt = "";
+
+  const closeButton = document.createElement("button");
+  closeButton.className = "image-lightbox-close";
+  closeButton.type = "button";
+  closeButton.textContent = "×";
+  closeButton.setAttribute("aria-label", "Close enlarged image");
+
+  lightbox.append(enlarged, closeButton);
+  document.body.appendChild(lightbox);
+
+  function closeLightbox() {
+    lightbox.classList.remove("visible");
+    enlarged.removeAttribute("src");
+  }
+
+  document.querySelectorAll("body img:not(.image-lightbox img)").forEach(img => {
+    img.loading = "lazy";
+    img.style.cursor = "zoom-in";
+
+    img.addEventListener("click", () => {
+      if (!img.complete || img.naturalWidth === 0) {
+        return;
+      }
+
+      enlarged.src = img.currentSrc || img.src;
+      enlarged.alt = img.alt || "Enlarged image";
+      lightbox.classList.add("visible");
+    });
+  });
+
+  lightbox.addEventListener("click", event => {
+    if (event.target === lightbox || event.target === closeButton) {
+      closeLightbox();
+    }
+  });
+
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape") {
+      closeLightbox();
+    }
+  });
+})();
+</script>
+</body>
+</html>

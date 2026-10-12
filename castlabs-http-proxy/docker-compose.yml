@@ -1,0 +1,11 @@
+
+services:
+  proxy:
+    build:
+      context: .
+    ports:
+      - "${HTTP_PORT:-8000}:${HTTP_PORT:-8000}"
+    environment:
+      HTTP_PORT: "${HTTP_PORT:-8000}"
+      JWT_SECRET_HEX: "${JWT_SECRET_HEX:?Set JWT_SECRET_HEX in .env}"
+      UPSTREAM_URL: "${UPSTREAM_URL:-https://postman-echo.com/post}"
