@@ -2,9 +2,9 @@
 
 This repository contains my solutions to both parts of the challenge.
 
-## Solutions
+## Supporting Documentation
 
-**[View the solutions online](https://carlosjcuevasm.github.io/cc-castlabs-challenge/)** - Browse the solutions and supporting documentation in a formatted web interface.
+**[View them online](https://carlosjcuevasm.github.io/cc-castlabs-challenge/)** - Browse the supporting documents in a formatted web interface, making the HTML documents easier to read right off the bat.
 
 - [HTTP Proxy](./castlabs-http-proxy/README.md) - Python proxy implementation, setup instructions, and tests.
 - [HTTP Proxy Development Notes](./castlabs-http-proxy/notes-http-proxy-logseq-interactive.html) -  Unpolished working notes capturing my thought process and implementation decisions during development.
