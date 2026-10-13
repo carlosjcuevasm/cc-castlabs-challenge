@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Logseq Export</title>
+
+  <style>
+    /* Main reading layout. */
+    body {
+      max-width: 1200px;
+      margin: 32px auto;
+      padding: 0 32px;
+      font-family: system-ui, sans-serif;
+      font-size: 22px;
+      line-height: 1.8;
+      color: #252525;
+      overflow-wrap: anywhere;
+    }
+
+    /* Remove all list markers, including square bullets. */
+    ul,
+    ol {
+      list-style: none;
+      padding-left: 0;
+      margin: 8px 0;
+    }
+
+    li {
+      list-style: none;
+      padding: 7px 0;
+      margin: 0;
+    }
+
+    /* Prevent markers beside collapsible toggles. */
+    li:has(> details) {
+      list-style: none;
+    }
+
+    /* Large, readable typography at every nesting level. */
+    li.logseq-item-1 {
+      font-size: 32px;
+      font-weight: 750;
+    }
+
+    li.logseq-item-2 {
+      font-size: 28px;
+      font-weight: 650;
+    }
+
+    li.logseq-item-3 {
+      font-size: 25px;
+      font-weight: 550;
+    }
+
+    li.logseq-item-4 {
+      font-size: 23px;
+      font-weight: 450;
+    }
+
+    li.logseq-item-5 {
+      font-size: 22px;
+      font-weight: 400;
+    }
+
+    li.logseq-item-6 {
+      font-size: 21px;
+      font-weight: 400;
+    }
+
+    li.logseq-item-7,
+    li.logseq-item-8,
+    li.logseq-item-9,
+    li.logseq-item-10,
+    li.logseq-item-11,
+    li.logseq-item-12,
+    li.logseq-item-13,
+    li.logseq-item-14,
+    li.logseq-item-15 {
+      font-size: 20px;
+      font-weight: 400;
+    }
+
+    /* Make toggle headings inherit their nesting level's font. */
+    li[class*="logseq-item-"]>details>summary {
+      font-size: inherit;
+      font-weight: inherit;
+      line-height: 1.7;
+    }
+
+    details>summary {
+      cursor: pointer;
+      line-height: 1.7;
+    }
+
+    summary:hover {
+      color: #666;
+    }
+
+    /* Indent nested content without showing bullet markers. */
+    details>ul,
+    details>ol {
+      margin-top: 10px;
+      margin-bottom: 12px;
+      padding-left: 28px;
+    }
+
+    /* Comfortable paragraph spacing. */
+    p {
+      margin: 12px 0;
+    }
+
+    /* Inline image thumbnails. */
+    img.logseq-thumbnail,
+    img {
+      display: inline-block;
+      max-width: 280px;
+      max-height: 200px;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      vertical-align: middle;
+      margin: 8px 6px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      cursor: zoom-in;
+    }
+
+    img:hover {
+      opacity: 0.9;
+    }
+
+    pre {
+      overflow-x: auto;
+      max-width: 100%;
+      font-size: 18px;
+    }
+
+    code {
+      font-size: 0.9em;
+    }
+
+    /* Full-screen image viewer. */
+    .image-lightbox {
+      display: none;
+      position: fixed;
+      z-index: 99999;
+      inset: 0;
+      padding: 24px;
+      box-sizing: border-box;
+      background: rgba(0, 0, 0, 0.90);
+      align-items: center;
+      justify-content: center;
+      cursor: zoom-out;
+    }
+
+    .image-lightbox.visible {
+      display: flex;
+    }
+
+    .image-lightbox img {
+      display: block;
+      max-width: 95vw;
+      max-height: 92vh;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      border: none;
+      border-radius: 4px;
+      margin: 0;
+      background: transparent;
+      cursor: zoom-out;
+    }
+
+    .image-lightbox-close {
+      position: absolute;
+      top: 12px;
+      right: 20px;
+      color: white;
+      font-size: 40px;
+      line-height: 1;
+      background: transparent;
+      border: 0;
+      cursor: pointer;
+    }
+
+    /* Smaller screens. */
+    @media (max-width: 700px) {
+      body {
+        margin: 16px auto;
+        padding: 0 16px;
+        font-size: 20px;
+      }
+
+      li.logseq-item-1 {
+        font-size: 28px;
+      }
+
+      li.logseq-item-2 {
+        font-size: 25px;
+      }
+
+      li.logseq-item-3 {
+        font-size: 23px;
+      }
+
+      li.logseq-item-4 {
+        font-size: 21px;
+      }
+
+      li.logseq-item-5 {
+        font-size: 20px;
+      }
+
+      li.logseq-item-6 {
+        font-size: 19px;
+      }
+
+      li.logseq-item-7,
+      li.logseq-item-8,
+      li.logseq-item-9,
+      li.logseq-item-10,
+      li.logseq-item-11,
+      li.logseq-item-12,
+      li.logseq-item-13,
+      li.logseq-item-14,
+      li.logseq-item-15 {
+        font-size: 18px;
+      }
+
+      details>ul,
+      details>ol {
+        padding-left: 16px;
+      }
+
+      img.logseq-thumbnail,
+      img {
+        max-width: 100%;
+        max-height: 260px;
+      }
+    }
+
+    /* Automatic dark mode. */
+    @media (prefers-color-scheme: dark) {
+      body {
+        background: #1e1e1e;
+        color: #e5e5e5;
+      }
+
+      a {
+        color: #8ab4f8;
+      }
+
+      summary:hover {
+        color: #bbb;
+      }
+
+      img {
+        border-color: #555;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <ul>
+    <li class="logseq-item-1">
+      <details class="logseq-level-1">
+        <summary>Castlabs Coding Challenge Documents</summary>
+        <ul>
+          <li class="logseq-item-2">
+            <a href="./castlabs-customer-problem/solution-design-logseq-interactive.html">DRM Solution Design
+              Document</a>
+          </li>
+          <li class="logseq-item-2">
+            <details class="logseq-level-2">
+              <summary>HTTP Proxy Documents</summary>
+              <ul>
+                <li class="logseq-item-3">
+                  <a
+                    href="https://mdrenderer.github.io/?https://github.com/carlosjcuevasm/cc-castlabs-challenge/blob/main/castlabs-http-proxy/README.md">
+                    README
+                  </a>
+                  <a
+                    href="https://github.com/carlosjcuevasm/cc-castlabs-challenge/blob/main/castlabs-http-proxy/README.md">
+                    (Fallback: GitHub)
+                  </a>
+                </li>
+                <li class="logseq-item-3">
+                  <a href="./castlabs-http-proxy/notes-http-proxy-logseq-interactive.html">Dev Notes</a>
+                </li>
+              </ul>
+            </details>
+          </li>
+
+        </ul>
+      </details>
+    </li>
+
+  </ul>
+
+  <script>
+    (() => {
+      const lightbox = document.createElement("div");
+      lightbox.className = "image-lightbox";
+      lightbox.setAttribute("role", "dialog");
+      lightbox.setAttribute("aria-modal", "true");
+      lightbox.setAttribute("aria-label", "Enlarged image");
+
+      const enlarged = document.createElement("img");
+      enlarged.alt = "";
+
+      const closeButton = document.createElement("button");
+      closeButton.className = "image-lightbox-close";
+      closeButton.type = "button";
+      closeButton.textContent = "×";
+      closeButton.setAttribute("aria-label", "Close enlarged image");
+
+      lightbox.append(enlarged, closeButton);
+      document.body.appendChild(lightbox);
+
+      function closeLightbox() {
+        lightbox.classList.remove("visible");
+        enlarged.removeAttribute("src");
+      }
+
+      document.querySelectorAll("body img:not(.image-lightbox img)").forEach(img => {
+        img.loading = "lazy";
+        img.style.cursor = "zoom-in";
+
+        img.addEventListener("click", () => {
+          if (!img.complete || img.naturalWidth === 0) {
+            return;
+          }
+
+          enlarged.src = img.currentSrc || img.src;
+          enlarged.alt = img.alt || "Enlarged image";
+          lightbox.classList.add("visible");
+        });
+      });
+
+      lightbox.addEventListener("click", event => {
+        if (event.target === lightbox || event.target === closeButton) {
+          closeLightbox();
+        }
+      });
+
+      document.addEventListener("keydown", event => {
+        if (event.key === "Escape") {
+          closeLightbox();
+        }
+      });
+    })();
+  </script>
+</body>
+
+</html>
