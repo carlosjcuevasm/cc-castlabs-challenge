@@ -5,9 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Logseq Export</title>
-
   <style>
-    /* Main reading layout. */
     body {
       max-width: 1200px;
       margin: 32px auto;
@@ -19,7 +17,6 @@
       overflow-wrap: anywhere;
     }
 
-    /* Remove all list markers, including square bullets. */
     ul,
     ol {
       list-style: none;
@@ -33,12 +30,10 @@
       margin: 0;
     }
 
-    /* Prevent markers beside collapsible toggles. */
     li:has(> details) {
       list-style: none;
     }
 
-    /* Large, readable typography at every nesting level. */
     li.logseq-item-1 {
       font-size: 32px;
       font-weight: 750;
@@ -82,7 +77,6 @@
       font-weight: 400;
     }
 
-    /* Make toggle headings inherit their nesting level's font. */
     li[class*="logseq-item-"]>details>summary {
       font-size: inherit;
       font-weight: inherit;
@@ -98,7 +92,6 @@
       color: #666;
     }
 
-    /* Indent nested content without showing bullet markers. */
     details>ul,
     details>ol {
       margin-top: 10px;
@@ -106,12 +99,10 @@
       padding-left: 28px;
     }
 
-    /* Comfortable paragraph spacing. */
     p {
       margin: 12px 0;
     }
 
-    /* Inline image thumbnails. */
     img.logseq-thumbnail,
     img {
       display: inline-block;
@@ -141,7 +132,6 @@
       font-size: 0.9em;
     }
 
-    /* Full-screen image viewer. */
     .image-lightbox {
       display: none;
       position: fixed;
@@ -149,7 +139,7 @@
       inset: 0;
       padding: 24px;
       box-sizing: border-box;
-      background: rgba(0, 0, 0, 0.90);
+      background: rgba(0, 0, 0, .90);
       align-items: center;
       justify-content: center;
       cursor: zoom-out;
@@ -185,7 +175,6 @@
       cursor: pointer;
     }
 
-    /* Smaller screens. */
     @media (max-width: 700px) {
       body {
         margin: 16px auto;
@@ -241,7 +230,6 @@
       }
     }
 
-    /* Automatic dark mode. */
     @media (prefers-color-scheme: dark) {
       body {
         background: #1e1e1e;
@@ -258,6 +246,152 @@
 
       img {
         border-color: #555;
+      }
+    }
+  </style>
+
+  <!-- ===== AUTO-FIT ZOOM ===== -->
+  <style>
+    /* Every size below scales with --z, which the script sets per toggle. */
+    @property --z {
+      syntax: '<number>';
+      inherits: true;
+      initial-value: 1;
+    }
+
+    :root {
+      --z: 1;
+      transition: --z .35s ease;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      :root {
+        transition: none;
+      }
+    }
+
+    body {
+      font-size: calc(22px * var(--z));
+      max-width: min(calc(1200px * var(--z)), calc(100vw - 64px));
+    }
+
+    li.logseq-item-1 {
+      font-size: calc(32px * var(--z));
+    }
+
+    li.logseq-item-2 {
+      font-size: calc(28px * var(--z));
+    }
+
+    li.logseq-item-3 {
+      font-size: calc(25px * var(--z));
+    }
+
+    li.logseq-item-4 {
+      font-size: calc(23px * var(--z));
+    }
+
+    li.logseq-item-5 {
+      font-size: calc(22px * var(--z));
+    }
+
+    li.logseq-item-6 {
+      font-size: calc(21px * var(--z));
+    }
+
+    li.logseq-item-7,
+    li.logseq-item-8,
+    li.logseq-item-9,
+    li.logseq-item-10,
+    li.logseq-item-11,
+    li.logseq-item-12,
+    li.logseq-item-13,
+    li.logseq-item-14,
+    li.logseq-item-15 {
+      font-size: calc(20px * var(--z));
+    }
+
+    pre {
+      font-size: calc(18px * var(--z));
+    }
+
+    body>ul img.logseq-thumbnail {
+      max-width: calc(280px * var(--z));
+      max-height: calc(200px * var(--z));
+    }
+
+    details {
+      scroll-margin-top: 16px;
+    }
+
+    /* Mobile baseline (same sizes as the original breakpoint), still scaled. */
+    @media (max-width: 700px) {
+      body {
+        font-size: calc(20px * var(--z));
+        max-width: none;
+      }
+
+      li.logseq-item-1 {
+        font-size: calc(28px * var(--z));
+      }
+
+      li.logseq-item-2 {
+        font-size: calc(25px * var(--z));
+      }
+
+      li.logseq-item-3 {
+        font-size: calc(23px * var(--z));
+      }
+
+      li.logseq-item-4 {
+        font-size: calc(21px * var(--z));
+      }
+
+      li.logseq-item-5 {
+        font-size: calc(20px * var(--z));
+      }
+
+      li.logseq-item-6 {
+        font-size: calc(19px * var(--z));
+      }
+
+      li.logseq-item-7,
+      li.logseq-item-8,
+      li.logseq-item-9,
+      li.logseq-item-10,
+      li.logseq-item-11,
+      li.logseq-item-12,
+      li.logseq-item-13,
+      li.logseq-item-14,
+      li.logseq-item-15 {
+        font-size: calc(18px * var(--z));
+      }
+
+      body>ul img.logseq-thumbnail {
+        max-width: 100%;
+        max-height: calc(260px * var(--z));
+      }
+    }
+
+    #autofit-toggle {
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      z-index: 9999;
+      font: 14px system-ui, sans-serif;
+      padding: 6px 12px;
+      border: 1px solid #888;
+      border-radius: 6px;
+      cursor: pointer;
+      background: #fff;
+      color: #252525;
+      opacity: .85;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      #autofit-toggle {
+        background: #333;
+        color: #eee;
       }
     }
   </style>
@@ -340,16 +474,16 @@
                         <details class="logseq-level-4">
                           <summary>Why it matters:</summary>
                           <ul>
-                            <li class="logseq-item-5">A DRM license request is within the critical path playback. Even
-                              if the video is available through the CDN and the player can download its segments,
-                              playback won't work as expected until the device obtain a valid license in time.</li>
+                            <li class="logseq-item-5">A DRM license request sits within the critical playback path.</li>
+                            <li class="logseq-item-5">Even if the video is available through the CDN and the player can
+                              download its segments, playback won't work as expected until the device obtains a valid
+                              license.</li>
                           </ul>
                         </details>
                       </li>
                       <li class="logseq-item-4">
                         <details class="logseq-level-4">
-                          <summary>Business Impact: Potential playback failures and degraded user experience during
-                            high-demand launches.</summary>
+                          <summary>Business Impact: Playback failures results in degraded user experience.</summary>
                           <ul>
                             <li class="logseq-item-5">
                               <details class="logseq-level-5">
@@ -379,11 +513,11 @@
                         <details class="logseq-level-4">
                           <summary>Must be attained (Intentionally unquantified requirements)</summary>
                           <ul>
-                            <li class="logseq-item-5">DRM license-request timeouts do not happen on popular launches.
-                            </li>
+                            <li class="logseq-item-5">DRM license-request timeouts do not happen on popular launches,
+                              and overall are extremely rare.</li>
                             <li class="logseq-item-5">High license-request success rate and acceptable response latency.
                             </li>
-                            <li class="logseq-item-5">Migration with minimal service disruption.</li>
+                            <li class="logseq-item-5">Migration with minimal service disruption. This is critical.</li>
                           </ul>
                         </details>
                       </li>
@@ -399,25 +533,19 @@
                           <summary>Facts, Assumptions and Contingency</summary>
                           <ul>
                             <li class="logseq-item-5">There is not additional information about the customer operation
-                              modules and associated architecture. I feel most comfortable by distinguishing the types
-                              of information I'll be handling and building on.</li>
-                            <li class="logseq-item-5">
-                              <details class="logseq-level-5">
-                                <summary>Thus... I'm to establish</summary>
-                                <ul>
-                                  <li class="logseq-item-6">Facts: Things explicitly stated about the customer
-                                    operations and the observed problem.</li>
-                                  <li class="logseq-item-6">Unknowns: Information that I cannot determine from the
-                                    available evidence.</li>
-                                  <li class="logseq-item-6">Reasonable Assumptions: Inferences from usual industry
-                                    practices and the known facts. They're kind of expected.</li>
-                                  <li class="logseq-item-6">Working Assumptions: Just decisions made to proceed with the
-                                    solution design, despite missing information.</li>
-                                  <li class="logseq-item-6">Contingency: Preliminary plan or course of action to take
-                                    when something is not possible as presumed</li>
-                                </ul>
-                              </details>
-                            </li>
+                              modules and associated architecture.</li>
+                            <li class="logseq-item-5">I feel most comfortable by distinguishing the types of information
+                              I'll be handling and building on.</li>
+                            <li class="logseq-item-5">Facts: Things explicitly stated about the customer operations and
+                              the observed problem.</li>
+                            <li class="logseq-item-5">Unknowns: Information that I cannot determine from the available
+                              evidence.</li>
+                            <li class="logseq-item-5">Reasonable Assumptions: Inferences from usual industry practices
+                              and the known facts. Like educated guesses.</li>
+                            <li class="logseq-item-5">Working Assumptions: Just decisions made to proceed with the
+                              solution design, despite missing information.</li>
+                            <li class="logseq-item-5">Contingency: Preliminary plan or course of action to take when
+                              something is not as expected</li>
                           </ul>
                         </details>
                       </li>
@@ -425,38 +553,26 @@
                         <details class="logseq-level-4">
                           <summary>DRM System Model</summary>
                           <ul>
-                            <li class="logseq-item-5">
-                              <details class="logseq-level-5">
-                                <summary>Reasonable Assumption</summary>
-                                <ul>
-                                  <li class="logseq-item-6">
-                                    <details class="logseq-level-6">
-                                      <summary>I'll be working around the understanding of the usual DRM system
-                                        architecture, scoped for this solution design. Because I cannot know more about
-                                        the customer, this also serve as the basis of it's reasoning</summary>
-                                      <ul>
-                                        <li class="logseq-item-7">The Packager: Prepares the content for delivery. It
-                                          requests (or informs) of a Content Key (secret symmetrical encryption key) to
-                                          the DRM system (Key Management).</li>
-                                        <li class="logseq-item-7">Key management: Generates, stores, manages, or
-                                          supplies content encryption keys and their associated identifiers.</li>
-                                        <li class="logseq-item-7">Entitlement and authorization: The broadcaster
-                                          determines whether the user is permitted to access the content or not, and
-                                          communicates authorization to the license server.</li>
-                                        <li class="logseq-item-7">License server: Validates a license request and
-                                          returns a license constrained by the DRM policy in place.</li>
-                                        <li class="logseq-item-7">Player / User: The player / device requests a license;
-                                          It decrypts as expected once it receives it. Playback happens as expected if
-                                          the others are working fine.</li>
-                                      </ul>
-                                    </details>
-                                  </li>
-                                  <li class="logseq-item-6">License serving is a cross-cutting concern, these components
-                                    follow paths of communication among them to reach a smooth playback of decrypted
-                                    content.</li>
-                                </ul>
-                              </details>
-                            </li>
+                            <li class="logseq-item-5">This can be considered a Reasonable Assumption</li>
+                            <li class="logseq-item-5">I'll be working around the understanding of the usual DRM system
+                              architecture, scoped for this solution design. Because I cannot know more about the
+                              customer, this also serve as the basis of it's reasoning</li>
+                            <li class="logseq-item-5"></li>
+                            <li class="logseq-item-5">The Packager: Prepares the content for delivery. It requests (or
+                              informs) of a Content Encryption Key (secret symmetrical encryption key) to the DRM system
+                              (Key Management).</li>
+                            <li class="logseq-item-5">Key management: Generates, stores, manages, or supplies content
+                              encryption keys and their associated identifiers.</li>
+                            <li class="logseq-item-5">Entitlement and authorization: The broadcaster determines whether
+                              the user is permitted to access the content or not, and communicates authorization to the
+                              license server.</li>
+                            <li class="logseq-item-5">License server: Validates a license request and returns a license
+                              constrained by the DRM policy in place.</li>
+                            <li class="logseq-item-5">Player / User: The player / device requests a license; It decrypts
+                              as expected once it receives it. Playback happens as expected if the others are working
+                              fine.</li>
+                            <li class="logseq-item-5">License serving is a cross-cutting concern, these components
+                              follow paths of communication among them to reach the smooth playback of content.</li>
                           </ul>
                         </details>
                       </li>
@@ -468,7 +584,7 @@
           </li>
           <li class="logseq-item-2">
             <details class="logseq-level-2">
-              <summary>Issue Assessment and Scope</summary>
+              <summary>Issue Assessment</summary>
               <ul>
                 <li class="logseq-item-3">
                   <details class="logseq-level-3">
@@ -525,32 +641,80 @@
                               about the licensing basics, so adaptation can be well thought about</li>
                             <li class="logseq-item-5">
                               <details class="logseq-level-5">
-                                <summary>Licensing Basic Flow view</summary>
+                                <summary>Licensing Basic Flow View</summary>
                                 <ul>
-
+                                  <li class="logseq-item-6">Token based</li>
+                                  <li class="logseq-item-6"><img
+                                      src="assets/6ad81312-f456-486e-9038-3eda3b84479d_1792557917689_0.png"
+                                      alt="6ad81312-f456-486e-9038-3eda3b84479d.png" class="logseq-thumbnail"></li>
+                                  <li class="logseq-item-6">Callback based</li>
+                                  <li class="logseq-item-6"><img
+                                      src="assets/6ad81287-5436-48d0-8ab8-89bc6a14e55c_1792557961710_0.png"
+                                      alt="6ad81287-5436-48d0-8ab8-89bc6a14e55c.png" class="logseq-thumbnail"></li>
+                                  <li class="logseq-item-6"></li>
+                                </ul>
+                              </details>
+                            </li>
+                            <li class="logseq-item-5">
+                              <details class="logseq-level-5">
+                                <summary>Terminology worth knowing</summary>
+                                <ul>
                                   <li class="logseq-item-6">
-                                    <img src="assets/token.png" alt="image.png" class="logseq-thumbnail" loading="lazy"
-                                      style="cursor: zoom-in;">
-                                    <p>Token Based</p>
+                                    <pre data-lang="`">					  DRM system (vendor): Widevine / PlayReady / FairPlay
+					  
+					  License provider: DRMtoday
+					  
+					  Encryption standard: CENC
+					  
+					  Playback workflow: Player ↔ License endpoints
+					  DRM System CDM
+</pre>
                                   </li>
+                                </ul>
+                              </details>
+                            </li>
+                            <li class="logseq-item-5">
+                              <details class="logseq-level-5">
+                                <summary>A bit more detail, to find the unknowns</summary>
+                                <ul>
                                   <li class="logseq-item-6">
-                                    <img src="assets/callback.png" alt="image.png" class="logseq-thumbnail" loading="lazy"
-                                      style="cursor: zoom-in;">
-                                    <p>Callback Based</p>
+                                    <details class="logseq-level-6">
+                                      <summary>Simplified high level view</summary>
+                                      <ul>
+                                        <li class="logseq-item-7"><img src="assets/image_1792558845257_0.png"
+                                            alt="image.png" class="logseq-thumbnail"></li>
+                                      </ul>
+                                    </details>
                                   </li>
                                   <li class="logseq-item-6">
                                     <details class="logseq-level-6">
-                                      <summary>Participants and namings worth knowing</summary>
+                                      <summary>Before the user uses device to playback</summary>
                                       <ul>
+                                        <li class="logseq-item-7">Before playback initiates, the infrastructure already
+                                          asked for DRM Licensing related things</li>
                                         <li class="logseq-item-7">
-                                          <pre data-lang="`">						  DRM system (vendor): Widevine / PlayReady / FairPlay
+                                          <pre>						  =========== PACKAGING SPACE ===========
 						  
-						  License provider: DRMtoday
+						  Source Content
+						     |
+						     v
+						  Content Encryptor / Packager
+						  |
+						  ├── Key generation / key provider
+						  |     - Generates or obtains CEK
+						  |     - Associates CEK with KID
+						  |
+						  ├── Content encryption &amp; packaging
+						    |     - Encrypts audio/video using CENC
+						    |       (cenc / cens / cbc1 / cbcs, as applicable)
+						    |     - Generates DASH / HLS manifests
+						    |     - Includes KID and DRM signaling
+						    |       (PSSH / ContentProtection / DRM system IDs)
 						  
-						  Encryption standard: CENC
-						  
-						  Playback workflow: Player ↔ License endpoints
-						  DRM System CDM
+						  Encrypted Media + Manifest
+						     |
+						     v
+						  Origin Storage / CDN
 </pre>
                                         </li>
                                       </ul>
@@ -558,116 +722,76 @@
                                   </li>
                                   <li class="logseq-item-6">
                                     <details class="logseq-level-6">
-                                      <summary>A bit more detail, to find the unknowns</summary>
+                                      <summary>User is trying to playback asset</summary>
                                       <ul>
                                         <li class="logseq-item-7">
-                                          <details class="logseq-level-7">
-                                            <summary>Before the user uses device to playback</summary>
-                                            <ul>
-                                              <li class="logseq-item-8">Before playback initiates, the infrastructure
-                                                already asked for DRM Licensing related things</li>
-                                              <li class="logseq-item-8">
-                                                <pre>							  =========== PACKAGING SPACE ===========
-							  
-							  Source Content
-							     |
-							     v
-							  Content Encryptor / Packager
-							  |
-							  ├── Key generation / key provider
-							  |     - Generates or obtains CEK
-							  |     - Associates CEK with KID
-							  |
-							  ├── Content encryption &amp; packaging
-							    |     - Encrypts audio/video using CENC
-							    |       (cenc / cens / cbc1 / cbcs, as applicable)
-							    |     - Generates DASH / HLS manifests
-							    |     - Includes KID and DRM signaling
-							    |       (PSSH / ContentProtection / DRM system IDs)
-							  
-							  Encrypted Media + Manifest
-							     |
-							     v
-							  Origin Storage / CDN
+                                          <pre data-lang="`">						  USER SPACE (User's device)
+						  ==========
+						  Browser / native application
+						     |
+						     v
+						  Player / Application      
+						  "Playback orchestrator"   
+						  - Fetches manifest/media                                    
+						  - Requests entitlement (optional, token vs callback ) 
+						  	-Checks user, asset, rights, 
+						       context, subscription,action etc
+						  - Coordinates CDM interaction	 
+						  - Routes license requests to the license provider 
+						         |  HTTPS license request + authorization token                       
+						  	   v
+						  =========== DRM INFRASTRUCTURE SPACE ===========
+						  
+						  DRMtoday — License Provider
+						  |
+						  ├── Authorization / policy evaluation (optional, token vs callback)
+						  |     - Applies licensing rules			 
+						  |
+						  ├── Key management / key resolution
+						  |     - Secure key storage and access
+						  |     - Resolves KID to the appropriate CEK
+						  |     - Retrieves associated key metadata
+						  |
+						  └── Licensing service
+						        - Generates DRM-specific license
+						        - Applies usage rights / restrictions
+						        - Returns license response
+						       |
+						       v
+						  ===== USER SPACE ======
+						  
+						  Player / Application
+						       | Passes license response to CDM
+						       v
+						  CDM processes license
+						       |
+						       v
+						  Authorized playback
 </pre>
-                                              </li>
-                                            </ul>
-                                          </details>
-                                        </li>
-                                        <li class="logseq-item-7">
-                                          <details class="logseq-level-7">
-                                            <summary>User is trying to playback asset</summary>
-                                            <ul>
-                                              <li class="logseq-item-8">
-                                                <pre data-lang="`">							  USER SPACE (User's device)
-							  ==========
-							  Browser / native application
-							     |
-							     v
-							  Player / Application      
-							  "Playback orchestrator"   
-							  - Fetches manifest/media                                    
-							  - Requests entitlement (optional, token vs callback ) 
-							  	-Checks user, asset, rights, 
-							       context, subscription,action etc
-							  - Coordinates CDM interaction	 
-							  - Routes license requests to the license provider 
-							         |  HTTPS license request + authorization token                       
-							  	   v
-							  =========== DRM INFRASTRUCTURE SPACE ===========
-							  
-							  DRMtoday — License Provider
-							  |
-							  ├── Authorization / policy evaluation (optional, token vs callback)
-							  |     - Applies licensing rules			 
-							  |
-							  ├── Key management / key resolution
-							  |     - Secure key storage and access
-							  |     - Resolves KID to the appropriate CEK
-							  |     - Retrieves associated key metadata
-							  |
-							  └── Licensing service
-							        - Generates DRM-specific license
-							        - Applies usage rights / restrictions
-							        - Returns license response
-							       |
-							       v
-							  ===== USER SPACE ======
-							  
-							  Player / Application
-							       | Passes license response to CDM
-							       v
-							  CDM processes license
-							       |
-							       v
-							  Authorized playback
-</pre>
-                                              </li>
-                                            </ul>
-                                          </details>
                                         </li>
                                       </ul>
                                     </details>
                                   </li>
-                                  <li class="logseq-item-6">
-                                    <details class="logseq-level-6">
-                                      <summary>Realize important points and dependencies</summary>
-                                      <ul>
-                                        <li class="logseq-item-7">DRM Infrastructure interactions happen early, during
-                                          Content Preparation. Packaging interacts with DRM Infrastructure parts (key
-                                          generation or retrival)</li>
-                                        <li class="logseq-item-7">Packaging, key generation, affect every new asset on a
-                                          library and affected every encrypted asset already</li>
-                                        <li class="logseq-item-7">Player is a critical piece of the licensing flow.
-                                          Orchestrates the license-request scheme.</li>
-                                        <li class="logseq-item-7">License provider-specific dependencies may be embedded
-                                          in, or associated with, assets throughout the content library, modulary or as
-                                          a monolith.</li>
-                                        <li class="logseq-item-7">Auth server is an important dependency outside
-                                          DRMtoday control.</li>
-                                      </ul>
-                                    </details>
-                                  </li>
+                                </ul>
+                              </details>
+                            </li>
+                            <li class="logseq-item-5">
+                              <details class="logseq-level-5">
+                                <summary>Realize important points and dependencies.<p> These become unknowns<br></p>
+                                </summary>
+                                <ul>
+                                  <li class="logseq-item-6">DRM Infrastructure interactions happen early, during Content
+                                    Preparation. Packaging interacts with DRM Infrastructure parts (key generation or
+                                    retrival)</li>
+                                  <li class="logseq-item-6">Packaging, key generation, affect every new asset on a
+                                    library and affected every encrypted asset already</li>
+                                  <li class="logseq-item-6">Player is a critical piece of the licensing flow.
+                                    Orchestrates the license-request scheme.</li>
+                                  <li class="logseq-item-6">License provider-specific dependencies may be embedded in,
+                                    or associated with, assets throughout the content library, modulary or as a
+                                    monolith.</li>
+                                  <li class="logseq-item-6">Auth server is an important dependency outside DRMtoday
+                                    control.</li>
                                 </ul>
                               </details>
                             </li>
@@ -891,7 +1015,7 @@
                                   </li>
                                   <li class="logseq-item-6">
                                     <details class="logseq-level-6">
-                                      <summary>Infrastructure constraints</summary>
+                                      <summary>Customer Infrastructure constraints</summary>
                                       <ul>
                                         <li class="logseq-item-7">
                                           <details class="logseq-level-7">
@@ -941,9 +1065,10 @@
                         <details class="logseq-level-4">
                           <summary>Customer-migration Working Model</summary>
                           <ul>
-                            <li class="logseq-item-5">Target state: <p> DRMtoday becomes the managed license provider
-                                and key-management destination. <br> The customer retains control of entitlement
-                                decisions and playback orchestration.<br></p>
+                            <li class="logseq-item-5">Target state:</li>
+                            <li class="logseq-item-5">DRMtoday becomes the managed license provider and key-management
+                              destination. <p> The customer retains control of entitlement decisions and playback
+                                orchestration.<br></p>
                             </li>
                             <li class="logseq-item-5">
                               <details class="logseq-level-5">
@@ -1032,16 +1157,17 @@
 			  User's Device / CDM
 </pre>
                       </li>
+                      <li class="logseq-item-4"><img
+                          src="assets/6ad841d6-330c-4f1f-871a-4fc1fdce8a85_1792558041401_0.png"
+                          alt="6ad841d6-330c-4f1f-871a-4fc1fdce8a85.png" class="logseq-thumbnail"></li>
                     </ul>
                   </details>
                 </li>
-                <li class="logseq-item-3">The solution architecture can reasonably be a documented DRMtoday integration
-                  pattern</li>
-                <li class="logseq-item-3">
-                  <img src="assets/token.png" alt="image.png" class="logseq-thumbnail" loading="lazy"
-                                      style="cursor: zoom-in;">
-                                    <p>Token Based</p>
-                </li>
+                <li class="logseq-item-3">The license orchestration method can reasonably be a documented DRMtoday
+                  integration pattern</li>
+                <li class="logseq-item-3"><img src="assets/6ad81312-f456-486e-9038-3eda3b84479d_1792557917689_0.png"
+                    alt="6ad81312-f456-486e-9038-3eda3b84479d.png" class="logseq-thumbnail" loading="lazy"
+                    style="cursor: zoom-in;"></li>
                 <li class="logseq-item-3">
                   <details class="logseq-level-3">
                     <summary>Decisions made explicit worth noting</summary>
@@ -1423,7 +1549,6 @@
                       <li class="logseq-item-4">Player application services: The customer needs to operate a player for
                         it's OTT needs. PRESTOplay is a possible cross-selling product that would also reinforce every
                         objective of a secure and highly reliable DRM licensing infrastructure goal.</li>
-                      <li class="logseq-item-4"></li>
                     </ul>
                   </details>
                 </li>
@@ -1434,7 +1559,6 @@
       </details>
     </li>
   </ul>
-
   <script>
     (() => {
       const lightbox = document.createElement("div");
@@ -1460,14 +1584,12 @@
         enlarged.removeAttribute("src");
       }
 
-      document.querySelectorAll("body img:not(.image-lightbox img)").forEach(img => {
+      document.querySelectorAll("body img").forEach(img => {
         img.loading = "lazy";
         img.style.cursor = "zoom-in";
 
         img.addEventListener("click", () => {
-          if (!img.complete || img.naturalWidth === 0) {
-            return;
-          }
+          if (!img.complete || img.naturalWidth === 0) return;
 
           enlarged.src = img.currentSrc || img.src;
           enlarged.alt = img.alt || "Enlarged image";
@@ -1482,10 +1604,68 @@
       });
 
       document.addEventListener("keydown", event => {
-        if (event.key === "Escape") {
-          closeLightbox();
-        }
+        if (event.key === "Escape") closeLightbox();
       });
+    })();
+  </script>
+
+  <!-- ===== AUTO-FIT ZOOM ===== -->
+  <script>
+    (() => {
+      const root = document.documentElement;
+      const MIN = 0.5, MAX = 1.6, FILL = 0.86;
+      let enabled = true, curZ = 1, ready = false, scrollTimer;
+      setTimeout(() => { ready = true; }, 600); // ignore toggles fired on page load
+
+      const btn = document.createElement('button');
+      btn.id = 'autofit-toggle';
+      btn.type = 'button';
+      const label = () => { btn.textContent = 'Auto-fit: ' + (enabled ? 'on' : 'off'); };
+      label();
+      btn.addEventListener('click', () => {
+        enabled = !enabled;
+        if (!enabled) setZoom(1);
+        label();
+      });
+      document.body.appendChild(btn);
+
+      function setZoom(z) { curZ = z; root.style.setProperty('--z', z); }
+
+      // Finds the largest zoom at which el still fits the screen height.
+      function fitZoom(el) {
+        root.style.transition = 'none'; // measure instantly, without animating
+        const goal = window.innerHeight * FILL;
+        const heightAt = z => {
+          root.style.setProperty('--z', z);
+          return el.getBoundingClientRect().height;
+        };
+        let z;
+        if (heightAt(MAX) <= goal) z = MAX;
+        else if (heightAt(MIN) > goal) z = MIN;
+        else {
+          let lo = MIN, hi = MAX;
+          for (let i = 0; i < 10; i++) {
+            const mid = (lo + hi) / 2;
+            if (heightAt(mid) <= goal) lo = mid; else hi = mid;
+          }
+          z = lo;
+        }
+        root.style.setProperty('--z', curZ); // restore, then animate to the new value
+        void root.offsetHeight;
+        root.style.transition = '';
+        return z;
+      }
+
+      document.addEventListener('toggle', e => {
+        const el = e.target;
+        if (!ready || !enabled || el.tagName !== 'DETAILS') return;
+        const target = el.open ? el : el.parentElement.closest('details[open]');
+        setZoom(target ? fitZoom(target) : 1);
+        clearTimeout(scrollTimer);
+        scrollTimer = setTimeout(() => {
+          (target || el).scrollIntoView({ behavior: 'smooth', block: target ? 'start' : 'nearest' });
+        }, 380);
+      }, true);
     })();
   </script>
 </body>
